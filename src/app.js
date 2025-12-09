@@ -8,6 +8,16 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// App pages
+app.get("/", (req, res) => res.redirect("/quick-mode"));
+app.get("/quick-mode", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/quick-mode.html"));
+});
+app.get("/chat-mode", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/chat-mode.html"));
+});
+
 app.use(express.static(path.join(__dirname, "../public")));
 
 app.use("/api/meta", metaRoutes);

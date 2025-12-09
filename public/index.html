@@ -3,113 +3,518 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Groundwater Quick Mode</title>
-    <link rel="stylesheet" href="./css/styles.css" />
+    <title>Groundwater Assistant</title>
+    <style>
+      :root {
+        --bg: #f7f8ff;
+        --panel: rgba(255, 255, 255, 0.72);
+        --border: rgba(108, 122, 255, 0.2);
+        --accent: #6b7bff;
+        --accent-2: #7fd1ff;
+        --text: #1f2a44;
+        --muted: #6c7690;
+        --shadow: 0 20px 80px rgba(94, 118, 255, 0.18);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 20% 20%, rgba(127, 209, 255, 0.25), transparent 35%),
+          radial-gradient(circle at 80% 20%, rgba(107, 123, 255, 0.2), transparent 30%),
+          var(--bg);
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 56px 20px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      .orb {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #fff, rgba(255, 255, 255, 0)),
+          radial-gradient(circle at 70% 30%, #7fd1ff, rgba(255, 255, 255, 0)),
+          radial-gradient(circle at 50% 70%, #6b7bff, rgba(255, 255, 255, 0));
+        filter: drop-shadow(0 10px 30px rgba(107, 123, 255, 0.35));
+      }
+
+      .headline {
+        text-align: center;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .headline strong {
+        color: #111827;
+        font-size: 28px;
+        display: block;
+      }
+
+      .headline span {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .card {
+        background: var(--panel);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 18px;
+        backdrop-filter: blur(12px);
+      }
+
+      .input-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      select,
+      input,
+      button {
+        width: 100%;
+        padding: 12px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+        color: var(--text);
+        outline: none;
+      }
+
+      button {
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 12px 30px rgba(107, 123, 255, 0.35);
+        border: none;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .years {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .years label {
+        margin: 0;
+        color: var(--text);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 12px;
+      }
+
+      .error {
+        color: #e02424;
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .results {
+        margin-top: 12px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 10px 8px;
+        text-align: left;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .loading {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
+      .dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-3px);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .headline strong {
+          font-size: 22px;
+        }
+        .page {
+          padding: 32px 14px 48px;
+        }
+      }
+    </style>
   </head>
   <body>
-    <header class="page-header">
-      <div>
-        <p class="eyebrow">JalSathi</p>
-        <h1>Groundwater Insights</h1>
-        <p class="subtitle">
-          Explore state, district, and block level groundwater information.
-        </p>
-      </div>
-      <div class="mode-actions">
-        <button id="complex-trigger" type="button" class="ghost">Complex Query</button>
-      </div>
-    </header>
+    <div id="root"></div>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script type="text/javascript">
+      const { useEffect, useState, useMemo } = React;
+      const API_BASE = "/api";
 
-    <main class="page-content">
-      <section class="panel chat-panel">
-        <div class="panel-header">
-          <h2>Chat Mode</h2>
-          <span class="tag">Conversational</span>
-        </div>
-        <div class="chat-window" id="chat-window" aria-live="polite"></div>
-        <div class="chat-actions">
-          <input
-            type="text"
-            id="chat-input"
-            placeholder="Type your message..."
-            autocomplete="off"
-            aria-label="Chat input"
-          />
-          <button id="chat-send" type="button">Send</button>
-          <button id="chat-reset" type="button" class="ghost">Start over</button>
-        </div>
-      </section>
+      async function fetchJSON(url, options = {}) {
+        const res = await fetch(url, options);
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Request failed");
+        }
+        return res.json();
+      }
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Quick Mode</h2>
-          <span class="tag">API driven</span>
-        </div>
-        <form id="quick-form" class="grid-form" novalidate>
-          <div class="field">
-            <label for="state-select">State</label>
-            <select id="state-select" name="state">
-              <option value="">Select a state</option>
-            </select>
-          </div>
+      function App() {
+        const [states, setStates] = useState([]);
+        const [districts, setDistricts] = useState([]);
+        const [blocks, setBlocks] = useState([]);
+        const [form, setForm] = useState({
+          state: "",
+          district: "",
+          block: "",
+          years: { 2023: true, 2024: true },
+        });
+        const [loadingMeta, setLoadingMeta] = useState(false);
+        const [loadingData, setLoadingData] = useState(false);
+        const [error, setError] = useState("");
+        const [results, setResults] = useState(null);
 
-          <div class="field">
-            <label for="district-select">District</label>
-            <select id="district-select" name="district" disabled>
-              <option value="">Select a district</option>
-            </select>
-          </div>
+        useEffect(() => {
+          const loadStates = async () => {
+            setLoadingMeta(true);
+            try {
+              const res = await fetchJSON(API_BASE + "/meta/states");
+              setStates(res || []);
+            } catch (err) {
+              console.error(err);
+              setError("Unable to load states.");
+            } finally {
+              setLoadingMeta(false);
+            }
+          };
+          loadStates();
+        }, []);
 
-          <div class="field">
-            <label for="block-select">Block / Assessment Unit</label>
-            <select id="block-select" name="block" disabled>
-              <option value="">Select a block</option>
-            </select>
-          </div>
+        const handleStateChange = async (value) => {
+          setForm((prev) => ({ ...prev, state: value, district: "", block: "" }));
+          setDistricts([]);
+          setBlocks([]);
+          if (!value) return;
+          try {
+            const res = await fetchJSON(API_BASE + "/meta/districts?state=" + encodeURIComponent(value));
+            setDistricts(res || []);
+          } catch (err) {
+            console.error(err);
+            setError("Unable to load districts.");
+          }
+        };
 
-          <div class="field field-years">
-            <label>Years</label>
-            <div class="checkboxes">
-              <label>
-                <input type="checkbox" name="years" value="2023" />
-                2023
-              </label>
-              <label>
-                <input type="checkbox" name="years" value="2024" />
-                2024
-              </label>
-              <p class="hint">Select none to use the latest year.</p>
-            </div>
-          </div>
+        const handleDistrictChange = async (value) => {
+          setForm((prev) => ({ ...prev, district: value, block: "" }));
+          setBlocks([]);
+          if (!value || !form.state) return;
+          try {
+            const res = await fetchJSON(
+              API_BASE +
+                "/meta/blocks?state=" +
+                encodeURIComponent(form.state) +
+                "&district=" +
+                encodeURIComponent(value)
+            );
+            setBlocks(res || []);
+          } catch (err) {
+            console.error(err);
+            setError("Unable to load blocks.");
+          }
+        };
 
-          <div class="actions">
-            <button id="get-data" type="submit">Get Data</button>
-            <p id="form-error" class="error-text" role="alert"></p>
-          </div>
-        </form>
+        const toggleYear = (year) => {
+          setForm((prev) => ({
+            ...prev,
+            years: { ...prev.years, [year]: !prev.years[year] },
+          }));
+        };
 
-        <div id="results" class="results">
-          <p class="muted">Results will appear here.</p>
-        </div>
-      </section>
-    </main>
+        const selectedYears = useMemo(() => {
+          return Object.entries(form.years)
+            .filter(([, v]) => v)
+            .map(([k]) => Number(k));
+        }, [form.years]);
 
-    <script type="module" src="./js/quickMode.js"></script>
-    <script type="module" src="./js/chatMode.js"></script>
-    <script type="module" src="./js/complexMode.js"></script>
+        const handleSubmit = async () => {
+          setError("");
+          if (!form.state && !form.district && !form.block) {
+            setError("Please pick at least one of state, district, or block.");
+            return;
+          }
+          setLoadingData(true);
+          setResults(null);
+          try {
+            const payload = {
+              state: form.state || null,
+              district: form.district || null,
+              block: form.block || null,
+              years: selectedYears.length ? selectedYears : [],
+            };
+            const res = await fetchJSON(API_BASE + "/query", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            setResults(res);
+          } catch (err) {
+            console.error(err);
+            setError("No data found for this combination. Try changing the filters.");
+          } finally {
+            setLoadingData(false);
+          }
+        };
 
-    <div id="complex-modal" class="modal" aria-hidden="true">
-      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="complex-title">
-        <div class="modal-header">
-          <h3 id="complex-title">Complex Queries (Coming Soon)</h3>
-          <button id="complex-close" class="ghost" type="button">Close</button>
-        </div>
-        <p class="muted">
-          In the future, you'll be able to ask natural language questions like “Compare groundwater
-          extraction in Rajasthan and Gujarat in 2023 and 2024” and get answers. For now, please use
-          Chat Mode or Quick Mode.
-        </p>
-      </div>
-    </div>
+        return React.createElement(
+          "div",
+          { className: "page" },
+          React.createElement("div", { className: "orb" }),
+          React.createElement(
+            "h1",
+            { className: "headline" },
+            React.createElement("strong", null, "Good Morning, JalSathi"),
+            React.createElement("span", null, "How can I assist you today?")
+          ),
+          React.createElement(
+            "div",
+            { className: "card" },
+            React.createElement(
+              "div",
+              { className: "input-row" },
+              React.createElement(
+                "div",
+                null,
+                React.createElement("label", null, "State"),
+                React.createElement(
+                  "select",
+                  {
+                    value: form.state,
+                    onChange: (e) => handleStateChange(e.target.value),
+                    disabled: loadingMeta || loadingData,
+                  },
+                  React.createElement("option", { value: "" }, "Select state"),
+                  states.map((s) => React.createElement("option", { key: s, value: s }, s))
+                )
+              ),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("label", null, "District"),
+                React.createElement(
+                  "select",
+                  {
+                    value: form.district,
+                    onChange: (e) => handleDistrictChange(e.target.value),
+                    disabled: !form.state || loadingData,
+                  },
+                  React.createElement("option", { value: "" }, "Select district"),
+                  districts.map((d) => React.createElement("option", { key: d, value: d }, d))
+                )
+              ),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("label", null, "Block / Assessment Unit"),
+                React.createElement(
+                  "select",
+                  {
+                    value: form.block,
+                    onChange: (e) =>
+                      setForm((prev) => ({ ...prev, block: e.target.value })),
+                    disabled: !form.state || !form.district || loadingData,
+                  },
+                  React.createElement("option", { value: "" }, "Select block"),
+                  blocks.map((b) => React.createElement("option", { key: b, value: b }, b))
+                )
+              )
+            ),
+            React.createElement(
+              "div",
+              { style: { marginTop: 12 } },
+              React.createElement("label", null, "Years"),
+              React.createElement(
+                "div",
+                { className: "years" },
+                [2023, 2024].map((year) =>
+                  React.createElement(
+                    "label",
+                    { key: year },
+                    React.createElement("input", {
+                      type: "checkbox",
+                      checked: !!form.years[year],
+                      onChange: () => toggleYear(year),
+                    }),
+                    "\u00a0",
+                    year
+                  )
+                ),
+                React.createElement(
+                  "span",
+                  { className: "muted" },
+                  "Select none to use the latest year."
+                )
+              )
+            ),
+            React.createElement(
+              "div",
+              { className: "actions" },
+              React.createElement(
+                "button",
+                { onClick: handleSubmit, disabled: loadingData },
+                loadingData
+                  ? React.createElement(
+                      "span",
+                      { className: "loading" },
+                      React.createElement("span", { className: "dot" }),
+                      React.createElement("span", { className: "dot" }),
+                      React.createElement("span", { className: "dot" }),
+                      React.createElement("span", null, "Loading...")
+                    )
+                  : "Get Data"
+              ),
+              error ? React.createElement("p", { className: "error" }, error) : null
+            ),
+            React.createElement(
+              "div",
+              { className: "results" },
+              !results && !error
+                ? React.createElement("p", { className: "muted" }, "Results will appear here.")
+                : null,
+              results && results.years && results.years.length > 0
+                ? React.createElement(
+                    React.Fragment,
+                    null,
+                    React.createElement(
+                      "p",
+                      null,
+                      React.createElement("strong", null, "Location:"),
+                      " ",
+                      [
+                        results.locationSummary && results.locationSummary.state,
+                        results.locationSummary && results.locationSummary.district,
+                        results.locationSummary && results.locationSummary.block,
+                      ]
+                        .filter(Boolean)
+                        .join(" \u203a ") || "All"
+                    ),
+                    React.createElement(
+                      "table",
+                      null,
+                      React.createElement(
+                        "thead",
+                        null,
+                        React.createElement(
+                          "tr",
+                          null,
+                          [
+                            "Year",
+                            "Annual Extractable (Ham)",
+                            "Total Extraction (Ham)",
+                            "Stage (%)",
+                            "Categorization",
+                          ].map((h) => React.createElement("th", { key: h }, h))
+                        )
+                      ),
+                      React.createElement(
+                        "tbody",
+                        null,
+                        results.years.map((y) =>
+                          React.createElement(
+                            "tr",
+                            { key: y.year },
+                            React.createElement("td", null, y.year),
+                            React.createElement("td", null, y.annual_extractable ?? "\u2014"),
+                            React.createElement("td", null, y.total_extraction ?? "\u2014"),
+                            React.createElement("td", null, y.stage_percent ?? "\u2014"),
+                            React.createElement("td", null, y.categorization ?? "Unknown")
+                          )
+                        )
+                      )
+                    )
+                  )
+                : null,
+              results && (!results.years || results.years.length === 0)
+                ? React.createElement(
+                    "p",
+                    { className: "muted" },
+                    "No data found for this combination. Try changing the filters."
+                  )
+                : null
+            )
+          )
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(React.createElement(App));
+    </script>
   </body>
- </html>
+</html>

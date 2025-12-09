@@ -426,8 +426,8 @@ th {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
@@ -438,13 +438,13 @@ th {
 }
 
 .language-toggle:hover {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
 }
 
 .language-toggle[aria-expanded="true"] {
-  background: #e2e8f0;
-  border-color: #3b82f6;
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.35);
 }
 
 .current-lang {
@@ -468,8 +468,8 @@ th {
   min-width: 200px;
   max-height: 300px;
   overflow-y: auto;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   z-index: 1000;
@@ -493,16 +493,16 @@ th {
 }
 
 .language-option:hover {
-  background: #f8fafc;
+  background: rgba(56, 189, 248, 0.08);
 }
 
 .language-option.active {
-  background: #dbeafe;
-  color: #1e40af;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent);
 }
 
 .language-option.active:hover {
-  background: #bfdbfe;
+  background: rgba(56, 189, 248, 0.16);
 }
 
 .lang-native {
@@ -551,9 +551,9 @@ th {
 
 .mode-btn {
   padding: 8px 16px;
-  border: 1px solid #e1e5e9;
-  background: white;
-  color: #64748b;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -562,8 +562,8 @@ th {
 }
 
 .mode-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
 }
 
 .mode-btn.active {
@@ -586,9 +586,9 @@ th {
 
 .secondary-btn {
   padding: 8px 16px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -597,7 +597,8 @@ th {
 }
 
 .secondary-btn:hover {
-  background: #e2e8f0;
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.2);
 }
 
 .locations-container {
@@ -607,10 +608,10 @@ th {
 }
 
 .location-card {
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-  background: white;
+  background: var(--panel);
 }
 
 .location-header {
@@ -666,10 +667,10 @@ th {
 }
 
 .result-card {
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-  background: white;
+  background: var(--panel);
   margin-bottom: 16px;
 }
 
@@ -693,13 +694,13 @@ th {
 .result-card td {
   padding: 8px 12px;
   text-align: left;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
 }
 
 .result-card th {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.03);
   font-weight: 600;
-  color: #475569;
+  color: var(--muted);
 }
 
 .result-card tr:last-child td {

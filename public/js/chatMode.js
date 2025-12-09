@@ -1,6 +1,8 @@
 const chatWindow = document.getElementById("chat-window");
 const chatInput = document.getElementById("chat-input");
 const chatSend = document.getElementById("chat-send");
+const micButton = document.getElementById("mic-button");
+const languageSelect = document.getElementById("language-select");
 const chatReset = document.getElementById("chat-reset");
 const chatStateInput = document.getElementById("chat-state-input");
 const chatDistrictInput = document.getElementById("chat-district-input");
@@ -486,6 +488,107 @@ async function handleUserInput() {
     addMessage("Something went wrong. Please try again.", "bot");
   }
 }
+
+/**
+ * Speech Recognition
+ */
+
+let isRecording = false;
+let currentRecognition = null; // To hold the current recognition instance
+
+function createSpeechRecognition() {
+  if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+    console.warn("Web Speech API not supported in this browser.");
+    micButton.style.display = 'none';
+    addMessage("Your browser does not support speech recognition.", "bot");
+    return null;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.lang = languageSelect.value;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    console.log("Speech recognition started");
+    isRecording = true;
+    micButton.classList.add('recording');
+    chatInput.placeholder = "Listening...";
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    chatInput.value = transcript;
+    handleUserInput(); // Automatically send the message after transcription
+  };
+
+  recognition.onend = () => {
+    console.log("Speech recognition ended");
+    isRecording = false;
+    micButton.classList.remove('recording');
+    chatInput.placeholder = "Type your message...";
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error", event);
+    isRecording = false;
+    micButton.classList.remove('recording');
+    chatInput.placeholder = "Type your message...";
+    let errorMessage = "Speech recognition error. Please try again.";
+    if (event.error === 'not-allowed') {
+      errorMessage = "Microphone access denied. Please allow microphone permissions in your browser settings.";
+    } else if (event.error === 'no-speech') {
+      errorMessage = "No speech detected. Please speak clearly.";
+    } else if (event.error === 'audio-capture') {
+      errorMessage = "No microphone found or audio capture failed. Ensure your microphone is connected.";
+    } else if (event.error === 'network') {
+      errorMessage = "Network error during speech recognition. Check your internet connection.";
+    } else if (event.error === 'language-not-supported') {
+      errorMessage = "Selected language is not supported by speech recognition.";
+    }
+    addMessage(errorMessage, "bot");
+  };
+
+  recognition.onnomatch = () => {
+    console.log("Speech recognition did not understand. Please try again.");
+    addMessage("I didn't understand that. Please try again.", "bot");
+    isRecording = false;
+    micButton.classList.remove('recording');
+    chatInput.placeholder = "Type your message...";
+  };
+
+  return recognition;
+}
+
+// Initialize speech recognition on load
+currentRecognition = createSpeechRecognition();
+
+// Event listeners
+micButton.addEventListener('click', () => {
+  if (currentRecognition) {
+    if (isRecording) {
+      currentRecognition.stop();
+    } else {
+      // Re-create recognition instance to ensure fresh state and language setting
+      currentRecognition = createSpeechRecognition();
+      if (currentRecognition) {
+        currentRecognition.start();
+      }
+    }
+  }
+});
+
+languageSelect.addEventListener('change', () => {
+  if (currentRecognition && isRecording) {
+    currentRecognition.stop(); // Stop ongoing recognition if language changes
+  }
+  // Re-create recognition instance with new language
+  currentRecognition = createSpeechRecognition();
+  console.log("Speech recognition language changed to:", languageSelect.value);
+  addMessage(`Speech recognition language set to ${languageSelect.options[languageSelect.selectedIndex].text}`, "bot");
+});
 
 // Events
 chatSend?.addEventListener("click", handleUserInput);
